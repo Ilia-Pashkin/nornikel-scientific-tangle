@@ -1,0 +1,83 @@
+{
+  "llama_server": "E:\\Program Files\\llama.cpp\\llama-server.exe",
+  "default_launch": {
+    "ctx": 16384,
+    "ngl": 99,
+    "n_cpu_moe": null,
+    "flash_attn": "on",
+    "reasoning": "off",
+    "ub": 2048,
+    "b": 4096,
+    "threads": 16,
+    "temp": null,
+    "extra": ""
+  },
+  "local_models": [
+    {
+      "name": "qwen3.6-27b-agent",
+      "model_path": "E:\\AI models\\MTP\\Qwen3.6-27B\\Qwen3.6-27B-Q4_K_M_MTP.gguf",
+      "mmproj_path": "E:\\AI models\\Qwen3.6-27B-GGUF\\mmproj-Qwen3.6-27B-BF16.gguf",
+      "port": 8086,
+      "role": "chat",
+      "launch": {
+        "ctx": 150000,
+        "ngl": 99,
+        "flash_attn": "on",
+        "reasoning": "off",
+        "ub": 2048,
+        "b": 4096,
+        "threads": 16,
+        "temp": 0.6,
+        "extra": "--seed 42 --metrics -ctk q8_0 -ctv q8_0 --no-mmap --mlock -np 1 --cache-reuse 256 --keep -1 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --repeat-penalty 1.0 --frequency-penalty 0 --spec-type draft-mtp --spec-draft-n-max 2 -n 16384"
+      }
+    },
+    {
+      "name": "qwen3.6-35b-a3b-agent",
+      "model_path": "E:\\AI models\\Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-Q5_K_M.gguf",
+      "mmproj_path": "E:\\AI models\\Qwen3.6-35B-A3B-GGUF\\mmproj-Qwen3.6-35B-A3B-BF16.gguf",
+      "port": 8086,
+      "role": "chat",
+      "launch": {
+        "ctx": 196608,
+        "ngl": 99,
+        "n_cpu_moe": 5,
+        "flash_attn": "on",
+        "reasoning": "off",
+        "ub": 2048,
+        "b": 4096,
+        "threads": 16,
+        "temp": 0.6,
+        "extra": "-ctk q8_0 -ctv q8_0 --no-mmap --mlock -np 1 --cache-reuse 256 --keep -1 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --repeat-penalty 1.0 --frequency-penalty 0 -n 16384"
+      }
+    },
+    {
+      "name": "bge-m3",
+      "model_path": "E:\\AI models\\bge-m3\\bge-m3-Q8_0.gguf",
+      "mmproj_path": null,
+      "port": 8087,
+      "role": "embedding",
+      "launch": {
+        "ctx": 8192,
+        "ngl": 0,
+        "flash_attn": "on",
+        "reasoning": "off",
+        "ub": 4096,
+        "b": 4096,
+        "threads": 16,
+        "temp": null,
+        "extra": ""
+      }
+    }
+  ],
+  "api_connections": [
+    {
+      "name": "DeepSeek V4 Pro",
+      "base_url": "https://routerai.ru/api/v1",
+      "api_key": "",
+      "extract_model": "deepseek/deepseek-v4-flash",
+      "answer_model": "deepseek/deepseek-v4-pro",
+      "embed_model": "baai/bge-m3",
+      "vision_model": "google/gemini-3.1-flash-lite"
+    }
+  ]
+}

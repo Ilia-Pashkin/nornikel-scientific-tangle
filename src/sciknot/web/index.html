@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Научный клубок — карта знаний R&D</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/graph3d.bundle.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-icon">🧶</span>
+      <div><h1>Научный клубок</h1></div>
+    </div>
+    <nav id="nav">
+      <button class="nav-btn active" data-tab="search">🔍 Поиск</button>
+      <button class="nav-btn" data-tab="graph">🕸️ Граф знаний</button>
+      <button class="nav-btn" data-tab="data">📥 Данные</button>
+      <button class="nav-btn" data-tab="models">🧩 Модели</button>
+      <button class="nav-btn" data-tab="audit">📋 Аудит</button>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <!-- ПОИСК -->
+    <section id="tab-search" class="tab active">
+      <div id="chat-tabs" class="chat-tabs"></div>
+      <div class="search-box">
+        <textarea id="query" rows="3"
+          placeholder="Какие технические решения организации циркуляции католита при электроэкстракции никеля описаны в мировой практике?"></textarea>
+        <div class="search-actions">
+          <button id="btn-ask" class="btn primary">Искать</button>
+          <button id="btn-stop" class="btn danger hidden">■ Стоп</button>
+          <label class="btn" for="ask-image" title="Приложить изображение к вопросу (vision)">🖼️</label>
+          <input id="ask-image" type="file" accept="image/*" hidden>
+          <span id="ask-image-name" class="hint"></span>
+          <button id="btn-export" class="btn hidden">⬇ Отчёт .md</button>
+          <span id="stage" class="stage"></span>
+        </div>
+      </div>
+      <div id="answer" class="answer markdown"></div>
+      <details id="vision-wrap" class="hidden"><summary>🖼️ Что распознано с изображения</summary>
+        <div id="vision-desc" class="answer markdown" style="margin-top:8px"></div>
+      </details>
+      <div id="experts" class="experts"></div>
+      <details id="sources-wrap" class="hidden"><summary>Источники (<span id="src-count">0</span>)</summary>
+        <div id="sources"></div>
+      </details>
+      <details id="parsed-wrap" class="hidden"><summary>Как система поняла запрос</summary>
+        <pre id="parsed"></pre>
+      </details>
+    </section>
+
+    <!-- ГРАФ -->
+    <section id="tab-graph" class="tab">
+      <div class="row">
+        <input id="graph-q" placeholder="электроэкстракция" style="flex:1">
+        <input id="graph-limit" type="number" value="60" min="10" max="200" style="width:80px">
+        <button id="btn-graph" class="btn primary">Показать</button>
+        <button id="btn-graph-clear" class="btn">Очистить граф</button>
+        <span id="graph-stage" class="stage"></span>
+      </div>
+      <div class="legend">
+        <span><i style="background:#5aa2f7"></i>материал</span>
+        <span><i style="background:#f7a34f"></i>процесс</span>
+        <span><i style="background:#a3e635"></i>оборудование</span>
+        <span><i style="background:#c084fc"></i>тема</span>
+        <span><i style="background:#f472b6"></i>эксперимент</span>
+        <span><i style="background:#22d3ee"></i>организация</span>
+        <span><i style="background:#f87171"></i>эксперт</span>
+        <span><i style="background:linear-gradient(90deg,#8b8ba3 50%,#34d399 50%)"></i>результат (полусфера)</span>
+        <span><i style="background:#4a4a63"></i>⚠ слабое покрытие (пробел: ≤2 док.)</span>
+        <span><i class="line" style="background:repeating-linear-gradient(90deg,#ef4444 0 4px,#fff 4px 8px)"></i>противоречие</span>
+        <span><i class="line" style="background:#f87171"></i>связь с экспертом</span>
+        <span><i class="line" style="background:#22d3ee"></i>связь с организацией</span>
+      </div>
+      <p class="hint">Вращение — мышью, зум — колесом, клик по узлу — подлёт камеры.
+        Наведение на связь: тип (цепочки «материал → процесс → оборудование → результат» читаются
+        по типам связей), число подтверждающих источников и дата актуализации.</p>
+      <div id="graph-view"></div>
+    </section>
+
+    <!-- ДАННЫЕ -->
+    <section id="tab-data" class="tab">
+      <h2>Загрузка документов <span class="chip">PDF · DOCX · PPTX · XLSX · XLS</span></h2>
+      <label id="drop-zone" for="data-files">
+        <div class="dz-icon">📥</div>
+        <div>Перетащите файлы сюда или нажмите для выбора</div>
+        <input id="data-files" type="file" multiple accept=".pdf,.docx,.docm,.pptx,.xlsx,.xls" hidden>
+        <div id="dz-list" class="hint"></div>
+      </label>
+      <div class="row" style="margin-top:10px">
+        <button id="btn-ingest" class="btn primary">Загрузить и проиндексировать</button>
+        <label class="hint" style="display:flex;align-items:center;gap:6px;margin:0;cursor:pointer"
+               title="Каждая крупная картинка из файла (графики, схемы, фото) описывается vision-моделью и попадает в индекс. Заметно медленнее.">
+          <input type="checkbox" id="opt-index-images" style="width:auto"> Индексировать изображения
+        </label>
+        <button id="btn-clear-data" class="btn danger">🗑 Очистить данные</button>
+        <span id="data-stage" class="stage"></span>
+      </div>
+      <div id="data-status" class="panel hidden" style="padding:14px 18px"></div>
+
+      <h2>Выявление пробелов в знаниях</h2>
+      <div class="row">
+        <button id="btn-gaps" class="btn primary">Найти пробелы</button>
+        <span id="gaps-stage" class="stage"></span>
+      </div>
+      <p class="hint">Слабо освещённые процессы (кандидаты на НИР) и темы, описанные только
+        в отечественной или только в зарубежной литературе.</p>
+      <div id="gaps"></div>
+
+      <h2>Корпус в графе знаний</h2>
+      <div id="corpus-stats" class="hint">загрузка…</div>
+    </section>
+
+    <!-- МОДЕЛИ -->
+    <section id="tab-models" class="tab">
+      <div class="active-line" id="models-active"></div>
+      <h2>Модели <span class="chip">llama.cpp · облако</span></h2>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="dot" id="slot-chat-dot"></span>
+          <span class="name">LLM</span>
+          <select id="slot-chat-model" style="width:280px"></select>
+          <span class="meta">порт</span>
+          <input id="slot-chat-port" type="number" style="width:90px">
+          <span class="model-actions">
+            <button class="btn small primary" id="slot-chat-apply">Применить</button>
+            <button class="btn small" id="slot-chat-stop">Остановить</button>
+          </span>
+        </div>
+        <div class="meta" id="slot-chat-status" style="margin-top:6px"></div>
+      </div>
+      <div class="model-card">
+        <div class="model-head">
+          <span class="dot" id="slot-embed-dot"></span>
+          <span class="name">Эмбеддинг</span>
+          <select id="slot-embed-model" style="width:280px"></select>
+          <span class="meta">порт</span>
+          <input id="slot-embed-port" type="number" style="width:90px">
+          <span class="model-actions">
+            <button class="btn small primary" id="slot-embed-apply">Применить</button>
+            <button class="btn small" id="slot-embed-stop">Остановить</button>
+          </span>
+        </div>
+        <div class="meta" id="slot-embed-status" style="margin-top:6px"></div>
+      </div>
+
+      <p class="hint">Локальные модели и API-подключения настраиваются в <code>models.json</code>
+        (шаблон — <code>models.example.json</code>); изменения подхватываются без перезапуска.</p>
+
+      <details class="panel"><summary>⚙️ Общие настройки запуска</summary>
+        <div class="form-grid">
+          <input id="st-server" placeholder="Путь к llama-server.exe">
+          <textarea id="st-launch" rows="10" spellcheck="false"></textarea>
+          <button id="btn-save-settings" class="btn primary">Сохранить</button>
+        </div>
+      </details>
+
+    </section>
+
+    <!-- АУДИТ -->
+    <section id="tab-audit" class="tab">
+      <button id="btn-audit" class="btn primary">Обновить журнал</button>
+      <div id="audit-rows"></div>
+    </section>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

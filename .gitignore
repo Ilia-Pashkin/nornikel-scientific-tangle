@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/
+data_processed/
+neo4j_data/
+audit.log
+.streamlit/secrets.toml
+models.json
+sciknot-src.zip
